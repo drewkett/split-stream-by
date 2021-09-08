@@ -27,15 +27,15 @@ pub trait PartitionStreamExt: Stream {
         (true_stream, false_stream)
     }
 
-    fn split_by_map<T, F, P>(
+    fn split_by_map<L, R, P>(
         self,
         predicate: P,
     ) -> (
-        LeftPartitionMap<Self::Item, T, F, Self, P>,
-        RightPartitionMap<Self::Item, T, F, Self, P>,
+        LeftPartitionMap<Self::Item, L, R, Self, P>,
+        RightPartitionMap<Self::Item, L, R, Self, P>,
     )
     where
-        P: Fn(Self::Item) -> Either<T, F>,
+        P: Fn(Self::Item) -> Either<L, R>,
         Self: Sized,
     {
         let stream = PartitionMap::new(self, predicate);
