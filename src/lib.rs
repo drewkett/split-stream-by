@@ -1,11 +1,13 @@
 mod partition;
 mod partition_map;
 
-use futures::Stream;
 pub(crate) use partition::Partition;
 pub use partition::{FalsePartition, TruePartition};
 pub(crate) use partition_map::PartitionMap;
-pub use partition_map::{FalsePartitionMap, PartitionBool, TruePartitionMap};
+pub use partition_map::{LeftPartitionMap, RightPartitionMap};
+
+pub use either::Either;
+use futures::Stream;
 
 pub trait ParititonStream: Stream + Sized {
     fn partition<P>(
@@ -28,15 +30,15 @@ pub trait ParititonStream: Stream + Sized {
         self,
         predicate: P,
     ) -> (
-        TruePartitionMap<Self::Item, T, F, Self, P>,
-        FalsePartitionMap<Self::Item, T, F, Self, P>,
+        LeftPartitionMap<Self::Item, T, F, Self, P>,
+        RightPartitionMap<Self::Item, T, F, Self, P>,
     )
     where
-        P: Fn(Self::Item) -> PartitionBool<T, F>,
+        P: Fn(Self::Item) -> Either<T, F>,
     {
         let stream = PartitionMap::new(self, predicate);
-        let true_stream = TruePartitionMap::new(stream.clone());
-        let false_stream = FalsePartitionMap::new(stream);
+        let true_stream = LeftPartitionMap::new(stream.clone());
+        let false_stream = RightPartitionMap::new(stream);
         (true_stream, false_stream)
     }
 }
