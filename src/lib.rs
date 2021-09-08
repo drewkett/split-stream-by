@@ -9,8 +9,8 @@ pub use partition_map::{LeftPartitionMap, RightPartitionMap};
 pub use either::Either;
 use futures::Stream;
 
-pub trait ParititonStream: Stream + Sized {
-    fn partition<P>(
+pub trait PartitionStreamExt: Stream {
+    fn split_by<P>(
         self,
         predicate: P,
     ) -> (
@@ -19,6 +19,7 @@ pub trait ParititonStream: Stream + Sized {
     )
     where
         P: Fn(&Self::Item) -> bool,
+        Self: Sized,
     {
         let stream = Partition::new(self, predicate);
         let true_stream = TruePartition::new(stream.clone());
@@ -35,6 +36,7 @@ pub trait ParititonStream: Stream + Sized {
     )
     where
         P: Fn(Self::Item) -> Either<T, F>,
+        Self: Sized,
     {
         let stream = PartitionMap::new(self, predicate);
         let true_stream = LeftPartitionMap::new(stream.clone());
@@ -42,3 +44,5 @@ pub trait ParititonStream: Stream + Sized {
         (true_stream, false_stream)
     }
 }
+
+impl<T> PartitionStreamExt for T where T: Stream + ?Sized {}
