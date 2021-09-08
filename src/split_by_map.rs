@@ -122,6 +122,8 @@ where
 }
 
 pin_project! {
+    /// A struct that implements `Stream` which returns the inner values
+    /// where the predicate returns `Either::Left(..)` when using `split_by_map`
     pub struct LeftSplitByMap<I, L, R, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
@@ -156,6 +158,8 @@ where
 }
 
 pin_project! {
+    /// A struct that implements `Stream` which returns the inner values
+    /// where the predicate returns `Either::Right(..)` when using `split_by_map`
     pub struct RightSplitByMap<I, L, R, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitByMap<I, L, R , S, P>>>,

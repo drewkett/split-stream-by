@@ -117,6 +117,8 @@ where
 }
 
 pin_project! {
+    /// A struct that implements `Stream` which returns the items where
+    /// the predicate returns `true`
     pub struct TrueSplitBy<I, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitBy<I, S, P>>>,
@@ -151,6 +153,8 @@ where
 }
 
 pin_project! {
+    /// A struct that implements `Stream` which returns the items where
+    /// the predicate returns `false`
     pub struct FalseSplitBy<I, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitBy<I, S, P>>>,
