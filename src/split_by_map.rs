@@ -5,8 +5,7 @@ use std::{
     task::{Poll, Waker},
 };
 
-use either::Either;
-use futures::Stream;
+use futures::{future::Either, Stream};
 use pin_project_lite::pin_project;
 
 pin_project! {

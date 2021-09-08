@@ -6,10 +6,10 @@ pub use split_by::{FalseSplitBy, TrueSplitBy};
 pub(crate) use split_by_map::SplitByMap;
 pub use split_by_map::{LeftSplitByMap, RightSplitByMap};
 
-pub use either::Either;
+pub use futures::future::Either;
 use futures::Stream;
 
-pub trait SplitStreamByExt: Stream {
+pub trait SplitByStreamExt: Stream {
     fn split_by<P>(
         self,
         predicate: P,
@@ -45,4 +45,4 @@ pub trait SplitStreamByExt: Stream {
     }
 }
 
-impl<T> SplitStreamByExt for T where T: Stream + ?Sized {}
+impl<T> SplitByStreamExt for T where T: Stream + ?Sized {}
