@@ -10,7 +10,7 @@ use futures::Stream;
 use pin_project_lite::pin_project;
 
 pin_project! {
-    pub(crate) struct PartitionMap<I, L, R, S, P> {
+    pub(crate) struct SplitByMap<I, L, R, S, P> {
         buf_left: Option<L>,
         buf_right: Option<R>,
         waker_left: Option<Waker>,
@@ -22,7 +22,7 @@ pin_project! {
     }
 }
 
-impl<I, L, R, S, P> PartitionMap<I, L, R, S, P>
+impl<I, L, R, S, P> SplitByMap<I, L, R, S, P>
 where
     S: Stream<Item = I>,
     P: Fn(I) -> Either<L, R>,
@@ -123,19 +123,19 @@ where
 }
 
 pin_project! {
-    pub struct LeftPartitionMap<I, L, R, S, P> {
+    pub struct LeftSplitByMap<I, L, R, S, P> {
         #[pin]
-        stream: Arc<Mutex<PartitionMap<I, L, R, S, P>>>,
+        stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
     }
 }
 
-impl<I, L, R, S, P> LeftPartitionMap<I, L, R, S, P> {
-    pub(crate) fn new(stream: Arc<Mutex<PartitionMap<I, L, R, S, P>>>) -> Self {
+impl<I, L, R, S, P> LeftSplitByMap<I, L, R, S, P> {
+    pub(crate) fn new(stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>) -> Self {
         Self { stream }
     }
 }
 
-impl<I, L, R, S, P> Stream for LeftPartitionMap<I, L, R, S, P>
+impl<I, L, R, S, P> Stream for LeftSplitByMap<I, L, R, S, P>
 where
     S: Stream<Item = I> + Unpin,
     P: Fn(I) -> Either<L, R>,
@@ -147,7 +147,7 @@ where
     ) -> std::task::Poll<Option<Self::Item>> {
         let this = self.project();
         let response = if let Ok(mut guard) = this.stream.try_lock() {
-            PartitionMap::poll_next_left(Pin::new(&mut guard), cx)
+            SplitByMap::poll_next_left(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
             Poll::Pending
@@ -157,19 +157,19 @@ where
 }
 
 pin_project! {
-    pub struct RightPartitionMap<I, L, R, S, P> {
+    pub struct RightSplitByMap<I, L, R, S, P> {
         #[pin]
-        stream: Arc<Mutex<PartitionMap<I, L, R , S, P>>>,
+        stream: Arc<Mutex<SplitByMap<I, L, R , S, P>>>,
     }
 }
 
-impl<I, L, R, S, P> RightPartitionMap<I, L, R, S, P> {
-    pub(crate) fn new(stream: Arc<Mutex<PartitionMap<I, L, R, S, P>>>) -> Self {
+impl<I, L, R, S, P> RightSplitByMap<I, L, R, S, P> {
+    pub(crate) fn new(stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>) -> Self {
         Self { stream }
     }
 }
 
-impl<I, L, R, S, P> Stream for RightPartitionMap<I, L, R, S, P>
+impl<I, L, R, S, P> Stream for RightSplitByMap<I, L, R, S, P>
 where
     S: Stream<Item = I> + Unpin,
     P: Fn(I) -> Either<L, R>,
@@ -181,7 +181,7 @@ where
     ) -> std::task::Poll<Option<Self::Item>> {
         let this = self.project();
         let response = if let Ok(mut guard) = this.stream.try_lock() {
-            PartitionMap::poll_next_right(Pin::new(&mut guard), cx)
+            SplitByMap::poll_next_right(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
             Poll::Pending

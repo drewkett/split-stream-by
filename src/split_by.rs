@@ -8,7 +8,7 @@ use futures::Stream;
 use pin_project_lite::pin_project;
 
 pin_project! {
-    pub(crate) struct Partition<I, S, P> {
+    pub(crate) struct SplitBy<I, S, P> {
         buf_true: Option<I>,
         buf_false: Option<I>,
         waker_true: Option<Waker>,
@@ -19,7 +19,7 @@ pin_project! {
     }
 }
 
-impl<I, S, P> Partition<I, S, P>
+impl<I, S, P> SplitBy<I, S, P>
 where
     S: Stream<Item = I>,
     P: Fn(&I) -> bool,
@@ -117,19 +117,19 @@ where
 }
 
 pin_project! {
-    pub struct TruePartition<I, S, P> {
+    pub struct TrueSplitBy<I, S, P> {
         #[pin]
-        stream: Arc<Mutex<Partition<I, S, P>>>,
+        stream: Arc<Mutex<SplitBy<I, S, P>>>,
     }
 }
 
-impl<I, S, P> TruePartition<I, S, P> {
-    pub(crate) fn new(stream: Arc<Mutex<Partition<I, S, P>>>) -> Self {
+impl<I, S, P> TrueSplitBy<I, S, P> {
+    pub(crate) fn new(stream: Arc<Mutex<SplitBy<I, S, P>>>) -> Self {
         Self { stream }
     }
 }
 
-impl<I, S, P> Stream for TruePartition<I, S, P>
+impl<I, S, P> Stream for TrueSplitBy<I, S, P>
 where
     S: Stream<Item = I> + Unpin,
     P: Fn(&I) -> bool,
@@ -141,7 +141,7 @@ where
     ) -> std::task::Poll<Option<Self::Item>> {
         let this = self.project();
         let response = if let Ok(mut guard) = this.stream.try_lock() {
-            Partition::poll_next_true(Pin::new(&mut guard), cx)
+            SplitBy::poll_next_true(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
             Poll::Pending
@@ -151,19 +151,19 @@ where
 }
 
 pin_project! {
-    pub struct FalsePartition<I, S, P> {
+    pub struct FalseSplitBy<I, S, P> {
         #[pin]
-        stream: Arc<Mutex<Partition<I, S, P>>>,
+        stream: Arc<Mutex<SplitBy<I, S, P>>>,
     }
 }
 
-impl<I, S, P> FalsePartition<I, S, P> {
-    pub(crate) fn new(stream: Arc<Mutex<Partition<I, S, P>>>) -> Self {
+impl<I, S, P> FalseSplitBy<I, S, P> {
+    pub(crate) fn new(stream: Arc<Mutex<SplitBy<I, S, P>>>) -> Self {
         Self { stream }
     }
 }
 
-impl<I, S, P> Stream for FalsePartition<I, S, P>
+impl<I, S, P> Stream for FalseSplitBy<I, S, P>
 where
     S: Stream<Item = I> + Unpin,
     P: Fn(&I) -> bool,
@@ -175,7 +175,7 @@ where
     ) -> std::task::Poll<Option<Self::Item>> {
         let this = self.project();
         let response = if let Ok(mut guard) = this.stream.try_lock() {
-            Partition::poll_next_false(Pin::new(&mut guard), cx)
+            SplitBy::poll_next_false(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
             Poll::Pending

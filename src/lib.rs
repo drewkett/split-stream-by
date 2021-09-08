@@ -1,29 +1,29 @@
-mod partition;
-mod partition_map;
+mod split_by;
+mod split_by_map;
 
-pub(crate) use partition::Partition;
-pub use partition::{FalsePartition, TruePartition};
-pub(crate) use partition_map::PartitionMap;
-pub use partition_map::{LeftPartitionMap, RightPartitionMap};
+pub(crate) use split_by::SplitBy;
+pub use split_by::{FalseSplitBy, TrueSplitBy};
+pub(crate) use split_by_map::SplitByMap;
+pub use split_by_map::{LeftSplitByMap, RightSplitByMap};
 
 pub use either::Either;
 use futures::Stream;
 
-pub trait PartitionStreamExt: Stream {
+pub trait SplitByStreamExt: Stream {
     fn split_by<P>(
         self,
         predicate: P,
     ) -> (
-        TruePartition<Self::Item, Self, P>,
-        FalsePartition<Self::Item, Self, P>,
+        TrueSplitBy<Self::Item, Self, P>,
+        FalseSplitBy<Self::Item, Self, P>,
     )
     where
         P: Fn(&Self::Item) -> bool,
         Self: Sized,
     {
-        let stream = Partition::new(self, predicate);
-        let true_stream = TruePartition::new(stream.clone());
-        let false_stream = FalsePartition::new(stream);
+        let stream = SplitBy::new(self, predicate);
+        let true_stream = TrueSplitBy::new(stream.clone());
+        let false_stream = FalseSplitBy::new(stream);
         (true_stream, false_stream)
     }
 
@@ -31,18 +31,18 @@ pub trait PartitionStreamExt: Stream {
         self,
         predicate: P,
     ) -> (
-        LeftPartitionMap<Self::Item, L, R, Self, P>,
-        RightPartitionMap<Self::Item, L, R, Self, P>,
+        LeftSplitByMap<Self::Item, L, R, Self, P>,
+        RightSplitByMap<Self::Item, L, R, Self, P>,
     )
     where
         P: Fn(Self::Item) -> Either<L, R>,
         Self: Sized,
     {
-        let stream = PartitionMap::new(self, predicate);
-        let true_stream = LeftPartitionMap::new(stream.clone());
-        let false_stream = RightPartitionMap::new(stream);
+        let stream = SplitByMap::new(self, predicate);
+        let true_stream = LeftSplitByMap::new(stream.clone());
+        let false_stream = RightSplitByMap::new(stream);
         (true_stream, false_stream)
     }
 }
 
-impl<T> PartitionStreamExt for T where T: Stream + ?Sized {}
+impl<T> SplitByStreamExt for T where T: Stream + ?Sized {}
