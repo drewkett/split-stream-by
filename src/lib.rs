@@ -2,6 +2,11 @@
 //!trait which allows for splitting a `Stream` into two streams using a
 //!predicate function thats checked on each `Stream::Item`.
 //!
+//!The current version of this crate buffers only one value and only in the
+//!scenario where the item yielded from the parent stream is not what the
+//!child stream requested per the predicate. In that scenario, the item is
+//!stored and the other stream is awakened
+//!
 //!```rust
 //!use split_stream_by::SplitStreamByExt;
 //!
