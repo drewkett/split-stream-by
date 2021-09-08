@@ -27,7 +27,7 @@ pub trait PartitionStreamExt: Stream {
         (true_stream, false_stream)
     }
 
-    fn partition_map<T, F, P>(
+    fn split_by_map<T, F, P>(
         self,
         predicate: P,
     ) -> (
