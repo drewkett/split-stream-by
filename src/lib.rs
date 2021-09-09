@@ -1,4 +1,4 @@
-//!This repo is for a rust crate that offers a `futures::Stream` extension
+//!This crate offers a `futures::Stream` extension
 //!trait which allows for splitting a `Stream` into two streams using a
 //!predicate function thats checked on each `Stream::Item`.
 //!
