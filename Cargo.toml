@@ -1,5 +1,8 @@
 [package]
 name = "split-stream-by"
+authors = ["Andrew Burkett <burkett.andrew@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/drewkett/split-stream-by"
 version = "0.0.0"
 edition = "2018"
 
