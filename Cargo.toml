@@ -1,5 +1,6 @@
 [package]
 name = "split-stream-by"
+description = "Stream extension crate for splitting a Stream into two per a predicate"
 authors = ["Andrew Burkett <burkett.andrew@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/drewkett/split-stream-by"
