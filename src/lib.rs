@@ -75,7 +75,7 @@ pub use futures::future::Either;
 use futures::Stream;
 
 /// This is the extension crate would provides the functionality for splitting a stream
-pub trait SplitByStreamExt: Stream {
+pub trait SplitStreamByExt: Stream {
     /// This takes ownership of a stream and returns two streams based on a predicate. When the predicate
     /// returns `true`, the item will appear in the first of the pair of streams returned.
     /// Items that return false will go into the second of the pair of streams
@@ -148,4 +148,4 @@ pub trait SplitByStreamExt: Stream {
     }
 }
 
-impl<T> SplitByStreamExt for T where T: Stream + ?Sized {}
+impl<T> SplitStreamByExt for T where T: Stream + ?Sized {}
