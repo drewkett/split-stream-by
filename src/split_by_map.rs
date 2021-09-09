@@ -52,9 +52,8 @@ where
             return Poll::Ready(Some(item));
         }
         if this.buf_right.is_some() {
-            // There is a value available for the other stream. Wake that
-            // stream if possible and return pending since we can't store
-            // multiple values for a stream
+            // There is a value available for the other stream. Wake that stream if possible
+            // and return pending since we can't store multiple values for a stream
             if let Some(waker) = this.waker_right {
                 waker.wake_by_ref();
             }
@@ -65,7 +64,8 @@ where
                 match (this.predicate)(item) {
                     Either::Left(left_item) => Poll::Ready(Some(left_item)),
                     Either::Right(right_item) => {
-                        // This value is not what we wanted. Store it and notify other partition task if it exists
+                        // This value is not what we wanted. Store it and notify other partition
+                        // task if it exists
                         let _ = this.buf_right.replace(right_item);
                         if let Some(waker) = this.waker_right {
                             waker.wake_by_ref();
@@ -93,9 +93,8 @@ where
             return Poll::Ready(Some(item));
         }
         if this.buf_left.is_some() {
-            // There is a value available for the other stream. Wake that
-            // stream if possible and return pending since we can't store
-            // multiple values for a stream
+            // There is a value available for the other stream. Wake that stream if possible
+            // and return pending since we can't store multiple values for a stream
             if let Some(waker) = this.waker_left {
                 waker.wake_by_ref();
             }
@@ -105,7 +104,8 @@ where
             Poll::Ready(Some(item)) => {
                 match (this.predicate)(item) {
                     Either::Left(left_item) => {
-                        // This value is not what we wanted. Store it and notify other partition task if it exists
+                        // This value is not what we wanted. Store it and notify other partition
+                        // task if it exists
                         let _ = this.buf_left.replace(left_item);
                         if let Some(waker) = this.waker_left {
                             waker.wake_by_ref();
@@ -122,8 +122,8 @@ where
 }
 
 pin_project! {
-    /// A struct that implements `Stream` which returns the inner values
-    /// where the predicate returns `Either::Left(..)` when using `split_by_map`
+    /// A struct that implements `Stream` which returns the inner values where
+    /// the predicate returns `Either::Left(..)` when using `split_by_map`
     pub struct LeftSplitByMap<I, L, R, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
@@ -158,8 +158,8 @@ where
 }
 
 pin_project! {
-    /// A struct that implements `Stream` which returns the inner values
-    /// where the predicate returns `Either::Right(..)` when using `split_by_map`
+    /// A struct that implements `Stream` which returns the inner values where
+    /// the predicate returns `Either::Right(..)` when using `split_by_map`
     pub struct RightSplitByMap<I, L, R, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitByMap<I, L, R , S, P>>>,

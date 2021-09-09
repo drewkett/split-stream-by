@@ -49,9 +49,8 @@ where
             return Poll::Ready(Some(item));
         }
         if this.buf_false.is_some() {
-            // There is a value available for the other stream. Wake that
-            // stream if possible and return pending since we can't store
-            // multiple values for a stream
+            // There is a value available for the other stream. Wake that stream if possible
+            // and return pending since we can't store multiple values for a stream
             if let Some(waker) = this.waker_false {
                 waker.wake_by_ref();
             }
@@ -62,7 +61,8 @@ where
                 if (this.predicate)(&item) {
                     Poll::Ready(Some(item))
                 } else {
-                    // This value is not what we wanted. Store it and notify other partition task if it exists
+                    // This value is not what we wanted. Store it and notify other partition task if
+                    // it exists
                     let _ = this.buf_false.replace(item);
                     if let Some(waker) = this.waker_false {
                         waker.wake_by_ref();
@@ -89,9 +89,8 @@ where
             return Poll::Ready(Some(item));
         }
         if this.buf_true.is_some() {
-            // There is a value available for the other stream. Wake that
-            // stream if possible and return pending since we can't store
-            // multiple values for a stream
+            // There is a value available for the other stream. Wake that stream if possible
+            // and return pending since we can't store multiple values for a stream
             if let Some(waker) = this.waker_true {
                 waker.wake_by_ref();
             }
@@ -100,7 +99,8 @@ where
         match this.stream.poll_next(cx) {
             Poll::Ready(Some(item)) => {
                 if (this.predicate)(&item) {
-                    // This value is not what we wanted. Store it and notify other partition task if it exists
+                    // This value is not what we wanted. Store it and notify other stream if waker
+                    // exists
                     let _ = this.buf_true.replace(item);
                     if let Some(waker) = this.waker_true {
                         waker.wake_by_ref();
@@ -117,8 +117,7 @@ where
 }
 
 pin_project! {
-    /// A struct that implements `Stream` which returns the items where
-    /// the predicate returns `true`
+    /// A struct that implements `Stream` which returns the items where the predicate returns `true`
     pub struct TrueSplitBy<I, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitBy<I, S, P>>>,
@@ -153,8 +152,7 @@ where
 }
 
 pin_project! {
-    /// A struct that implements `Stream` which returns the items where
-    /// the predicate returns `false`
+    /// A struct that implements `Stream` which returns the items where the predicate returns `false`
     pub struct FalseSplitBy<I, S, P> {
         #[pin]
         stream: Arc<Mutex<SplitBy<I, S, P>>>,
