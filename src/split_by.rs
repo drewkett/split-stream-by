@@ -5,18 +5,17 @@ use std::{
 };
 
 use futures::Stream;
-use pin_project_lite::pin_project;
+use pin_project::pin_project;
 
-pin_project! {
-    pub(crate) struct SplitBy<I, S, P> {
-        buf_true: Option<I>,
-        buf_false: Option<I>,
-        waker_true: Option<Waker>,
-        waker_false: Option<Waker>,
-        #[pin]
-        stream: S,
-        predicate: P,
-    }
+#[pin_project]
+pub(crate) struct SplitBy<I, S, P> {
+    buf_true: Option<I>,
+    buf_false: Option<I>,
+    waker_true: Option<Waker>,
+    waker_false: Option<Waker>,
+    #[pin]
+    stream: S,
+    predicate: P,
 }
 
 impl<I, S, P> SplitBy<I, S, P>
@@ -116,12 +115,9 @@ where
     }
 }
 
-pin_project! {
-    /// A struct that implements `Stream` which returns the items where the predicate returns `true`
-    pub struct TrueSplitBy<I, S, P> {
-        #[pin]
-        stream: Arc<Mutex<SplitBy<I, S, P>>>,
-    }
+/// A struct that implements `Stream` which returns the items where the predicate returns `true`
+pub struct TrueSplitBy<I, S, P> {
+    stream: Arc<Mutex<SplitBy<I, S, P>>>,
 }
 
 impl<I, S, P> TrueSplitBy<I, S, P> {
@@ -140,8 +136,7 @@ where
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        let this = self.project();
-        let response = if let Ok(mut guard) = this.stream.try_lock() {
+        let response = if let Ok(mut guard) = self.stream.try_lock() {
             SplitBy::poll_next_true(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
@@ -151,12 +146,9 @@ where
     }
 }
 
-pin_project! {
-    /// A struct that implements `Stream` which returns the items where the predicate returns `false`
-    pub struct FalseSplitBy<I, S, P> {
-        #[pin]
-        stream: Arc<Mutex<SplitBy<I, S, P>>>,
-    }
+/// A struct that implements `Stream` which returns the items where the predicate returns `false`
+pub struct FalseSplitBy<I, S, P> {
+    stream: Arc<Mutex<SplitBy<I, S, P>>>,
 }
 
 impl<I, S, P> FalseSplitBy<I, S, P> {
@@ -175,8 +167,7 @@ where
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        let this = self.project();
-        let response = if let Ok(mut guard) = this.stream.try_lock() {
+        let response = if let Ok(mut guard) = self.stream.try_lock() {
             SplitBy::poll_next_false(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();

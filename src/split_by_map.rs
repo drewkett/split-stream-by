@@ -6,19 +6,18 @@ use std::{
 };
 
 use futures::{future::Either, Stream};
-use pin_project_lite::pin_project;
+use pin_project::pin_project;
 
-pin_project! {
-    pub(crate) struct SplitByMap<I, L, R, S, P> {
-        buf_left: Option<L>,
-        buf_right: Option<R>,
-        waker_left: Option<Waker>,
-        waker_right: Option<Waker>,
-        #[pin]
-        stream: S,
-        predicate: P,
-        item: PhantomData<I>
-    }
+#[pin_project]
+pub(crate) struct SplitByMap<I, L, R, S, P> {
+    buf_left: Option<L>,
+    buf_right: Option<R>,
+    waker_left: Option<Waker>,
+    waker_right: Option<Waker>,
+    #[pin]
+    stream: S,
+    predicate: P,
+    item: PhantomData<I>,
 }
 
 impl<I, L, R, S, P> SplitByMap<I, L, R, S, P>
@@ -121,13 +120,10 @@ where
     }
 }
 
-pin_project! {
-    /// A struct that implements `Stream` which returns the inner values where
-    /// the predicate returns `Either::Left(..)` when using `split_by_map`
-    pub struct LeftSplitByMap<I, L, R, S, P> {
-        #[pin]
-        stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
-    }
+/// A struct that implements `Stream` which returns the inner values where
+/// the predicate returns `Either::Left(..)` when using `split_by_map`
+pub struct LeftSplitByMap<I, L, R, S, P> {
+    stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
 }
 
 impl<I, L, R, S, P> LeftSplitByMap<I, L, R, S, P> {
@@ -146,8 +142,7 @@ where
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        let this = self.project();
-        let response = if let Ok(mut guard) = this.stream.try_lock() {
+        let response = if let Ok(mut guard) = self.stream.try_lock() {
             SplitByMap::poll_next_left(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
@@ -157,13 +152,10 @@ where
     }
 }
 
-pin_project! {
-    /// A struct that implements `Stream` which returns the inner values where
-    /// the predicate returns `Either::Right(..)` when using `split_by_map`
-    pub struct RightSplitByMap<I, L, R, S, P> {
-        #[pin]
-        stream: Arc<Mutex<SplitByMap<I, L, R , S, P>>>,
-    }
+/// A struct that implements `Stream` which returns the inner values where
+/// the predicate returns `Either::Right(..)` when using `split_by_map`
+pub struct RightSplitByMap<I, L, R, S, P> {
+    stream: Arc<Mutex<SplitByMap<I, L, R, S, P>>>,
 }
 
 impl<I, L, R, S, P> RightSplitByMap<I, L, R, S, P> {
@@ -182,8 +174,7 @@ where
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        let this = self.project();
-        let response = if let Ok(mut guard) = this.stream.try_lock() {
+        let response = if let Ok(mut guard) = self.stream.try_lock() {
             SplitByMap::poll_next_right(Pin::new(&mut guard), cx)
         } else {
             cx.waker().wake_by_ref();
