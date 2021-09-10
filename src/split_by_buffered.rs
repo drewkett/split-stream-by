@@ -1,60 +1,12 @@
 use std::{
-    mem::MaybeUninit,
     pin::Pin,
     sync::{Arc, Mutex},
     task::{Poll, Waker},
 };
 
+use crate::ring_buf::RingBuf;
 use futures::Stream;
 use pin_project::pin_project;
-
-struct RingBuf<T, const N: usize> {
-    head: usize,
-    tail: usize,
-    data: [MaybeUninit<T>; N],
-}
-
-impl<T, const N: usize> RingBuf<T, N> {
-    fn new() -> Self {
-        Self {
-            head: 0,
-            tail: 0,
-            data: unsafe { MaybeUninit::uninit().assume_init() },
-        }
-    }
-
-    const fn len(&self) -> usize {
-        ((self.tail + N) - self.head) % N
-    }
-
-    const fn remaining(&self) -> usize {
-        N - self.len()
-    }
-
-    const fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    fn push_back(&mut self, item: T) -> Option<T> {
-        if self.remaining() > 0 {
-            unsafe { self.data[self.tail].as_mut_ptr().write(item) };
-            self.tail = (self.tail + 1) % N;
-            None
-        } else {
-            Some(item)
-        }
-    }
-
-    fn pop_front(&mut self) -> Option<T> {
-        if self.len() > 0 {
-            let item = unsafe { self.data[self.head].as_mut_ptr().read() };
-            self.head = (self.head + 1) % N;
-            Some(item)
-        } else {
-            None
-        }
-    }
-}
 
 #[pin_project]
 pub(crate) struct SplitByBuffered<I, S, P, const N: usize> {

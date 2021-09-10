@@ -63,6 +63,7 @@
 //! 	// ...
 //! }
 //! ```
+mod ring_buf;
 mod split_by;
 mod split_by_buffered;
 mod split_by_map;
