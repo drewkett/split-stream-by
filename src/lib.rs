@@ -64,10 +64,13 @@
 //! }
 //! ```
 mod split_by;
+mod split_by_buffered;
 mod split_by_map;
 
 pub(crate) use split_by::SplitBy;
 pub use split_by::{FalseSplitBy, TrueSplitBy};
+pub(crate) use split_by_buffered::SplitByBuffered;
+pub use split_by_buffered::{FalseSplitByBuffered, TrueSplitByBuffered};
 pub(crate) use split_by_map::SplitByMap;
 pub use split_by_map::{LeftSplitByMap, RightSplitByMap};
 
@@ -148,6 +151,36 @@ pub trait SplitStreamByExt: Stream {
         let stream = SplitByMap::new(self, predicate);
         let true_stream = LeftSplitByMap::new(stream.clone());
         let false_stream = RightSplitByMap::new(stream);
+        (true_stream, false_stream)
+    }
+
+    /// This takes ownership of a stream and returns two streams based on a
+    /// predicate. When the predicate returns `true`, the item will appear in
+    /// the first of the pair of streams returned. Items that return false will
+    /// go into the second of the pair of streams. This will buffer up to N
+    /// items of the inactive stream before returning Pending and notifying that
+    /// stream
+    ///
+    ///```rust
+    /// use split_stream_by::SplitStreamByExt;
+    ///
+    /// let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
+    /// let (even_stream, odd_stream) = incoming_stream.split_by(|&n| n % 2 == 0);
+    /// ```
+    fn split_by_buffered<P, const N: usize>(
+        self,
+        predicate: P,
+    ) -> (
+        TrueSplitByBuffered<Self::Item, Self, P, N>,
+        FalseSplitByBuffered<Self::Item, Self, P, N>,
+    )
+    where
+        P: Fn(&Self::Item) -> bool,
+        Self: Sized,
+    {
+        let stream = SplitByBuffered::new(self, predicate);
+        let true_stream = TrueSplitByBuffered::new(stream.clone());
+        let false_stream = FalseSplitByBuffered::new(stream);
         (true_stream, false_stream)
     }
 }
