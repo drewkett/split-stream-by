@@ -67,6 +67,7 @@ mod ring_buf;
 mod split_by;
 mod split_by_buffered;
 mod split_by_map;
+mod split_by_map_buffered;
 
 pub(crate) use split_by::SplitBy;
 pub use split_by::{FalseSplitBy, TrueSplitBy};
@@ -74,6 +75,8 @@ pub(crate) use split_by_buffered::SplitByBuffered;
 pub use split_by_buffered::{FalseSplitByBuffered, TrueSplitByBuffered};
 pub(crate) use split_by_map::SplitByMap;
 pub use split_by_map::{LeftSplitByMap, RightSplitByMap};
+pub(crate) use split_by_map_buffered::SplitByMapBuffered;
+pub use split_by_map_buffered::{LeftSplitByMapBuffered, RightSplitByMapBuffered};
 
 pub use futures::future::Either;
 use futures::Stream;
@@ -166,7 +169,7 @@ pub trait SplitStreamByExt: Stream {
     /// use split_stream_by::SplitStreamByExt;
     ///
     /// let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
-    /// let (even_stream, odd_stream) = incoming_stream.split_by(|&n| n % 2 == 0);
+    /// let (even_stream, odd_stream) = incoming_stream.split_by_buffered::<_,3>(|&n| n % 2 == 0);
     /// ```
     fn split_by_buffered<P, const N: usize>(
         self,
@@ -182,6 +185,53 @@ pub trait SplitStreamByExt: Stream {
         let stream = SplitByBuffered::new(self, predicate);
         let true_stream = TrueSplitByBuffered::new(stream.clone());
         let false_stream = FalseSplitByBuffered::new(stream);
+        (true_stream, false_stream)
+    }
+
+    /// This takes ownership of a stream and returns two streams based on a
+    /// predicate. The predicate takes an item by value and returns
+    /// `Either::Left(..)` or `Either::Right(..)` where the inner
+    /// values of `Left` and `Right` become the items of the two respective
+    /// streams. This will buffer up to N items of the inactive stream before
+    /// returning Pending and notifying that stream
+    ///
+    /// ```
+    /// use split_stream_by::{Either,SplitStreamByExt};
+    /// struct Request {
+    /// 	//...
+    /// }
+    /// struct Response {
+    /// 	//...
+    /// }
+    /// enum Message {
+    /// 	Request(Request),
+    /// 	Response(Response)
+    /// }
+    /// let incoming_stream = futures::stream::iter([
+    /// 	Message::Request(Request {}),
+    /// 	Message::Response(Response {}),
+    /// 	Message::Response(Response {}),
+    /// ]);
+    /// let (mut request_stream, mut response_stream) = incoming_stream.split_by_map_buffered::<_,_,_,3>(|item| match item {
+    /// 	Message::Request(req) => Either::Left(req),
+    /// 	Message::Response(res) => Either::Right(res),
+    /// });
+    /// ```
+
+    fn split_by_map_buffered<L, R, P, const N: usize>(
+        self,
+        predicate: P,
+    ) -> (
+        LeftSplitByMapBuffered<Self::Item, L, R, Self, P, N>,
+        RightSplitByMapBuffered<Self::Item, L, R, Self, P, N>,
+    )
+    where
+        P: Fn(Self::Item) -> Either<L, R>,
+        Self: Sized,
+    {
+        let stream = SplitByMapBuffered::new(self, predicate);
+        let true_stream = LeftSplitByMapBuffered::new(stream.clone());
+        let false_stream = RightSplitByMapBuffered::new(stream);
         (true_stream, false_stream)
     }
 }

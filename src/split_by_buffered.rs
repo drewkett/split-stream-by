@@ -61,7 +61,8 @@ where
                     Poll::Ready(Some(item))
                 } else {
                     // This value is not what we wanted. Store it and notify other partition task if
-                    // it exists. This can't fail because we checked above that the buffer isn't full
+                    // it exists. This can't fail because we checked above that the buffer isn't
+                    // full
                     let _ = this.buf_false.push_back(item);
                     if let Some(waker) = this.waker_false {
                         waker.wake_by_ref();
@@ -98,7 +99,8 @@ where
             Poll::Ready(Some(item)) => {
                 if (this.predicate)(&item) {
                     // This value is not what we wanted. Store it and notify other stream if waker
-                    // it exists. This can't fail because we checked above that the buffer isn't full
+                    // it exists. This can't fail because we checked above that the buffer isn't
+                    // full
                     let _ = this.buf_true.push_back(item);
                     if let Some(waker) = this.waker_true {
                         waker.wake_by_ref();
@@ -114,7 +116,8 @@ where
     }
 }
 
-/// A struct that implements `Stream` which returns the items where the predicate returns `true`
+/// A struct that implements `Stream` which returns the items where the
+/// predicate returns `true`
 pub struct TrueSplitByBuffered<I, S, P, const N: usize> {
     stream: Arc<Mutex<SplitByBuffered<I, S, P, N>>>,
 }
@@ -145,7 +148,8 @@ where
     }
 }
 
-/// A struct that implements `Stream` which returns the items where the predicate returns `false`
+/// A struct that implements `Stream` which returns the items where the
+/// predicate returns `false`
 pub struct FalseSplitByBuffered<I, S, P, const N: usize> {
     stream: Arc<Mutex<SplitByBuffered<I, S, P, N>>>,
 }

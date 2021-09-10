@@ -115,7 +115,8 @@ where
     }
 }
 
-/// A struct that implements `Stream` which returns the items where the predicate returns `true`
+/// A struct that implements `Stream` which returns the items where the
+/// predicate returns `true`
 pub struct TrueSplitBy<I, S, P> {
     stream: Arc<Mutex<SplitBy<I, S, P>>>,
 }
@@ -146,7 +147,8 @@ where
     }
 }
 
-/// A struct that implements `Stream` which returns the items where the predicate returns `false`
+/// A struct that implements `Stream` which returns the items where the
+/// predicate returns `false`
 pub struct FalseSplitBy<I, S, P> {
     stream: Arc<Mutex<SplitBy<I, S, P>>>,
 }
