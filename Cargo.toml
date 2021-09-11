@@ -12,3 +12,6 @@ edition = "2018"
 [dependencies]
 futures = "0.3"
 pin-project = "1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

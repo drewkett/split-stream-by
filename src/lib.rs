@@ -8,20 +8,20 @@
 //! the other stream is awakened
 //!
 //!```rust
+//! use futures::StreamExt;
 //! use split_stream_by::SplitStreamByExt;
 //!
-//! let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
-//! let (mut even_stream, mut odd_stream) = incoming_stream.split_by(|&n| n % 2 == 0);
+//! tokio::runtime::Runtime::new().unwrap().block_on(async {
+//!     let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
+//!     let (mut even_stream, mut odd_stream) = incoming_stream.split_by(|&n| n % 2 == 0);
 //!
-//! tokio::spawn(async move {
-//! 	while let Some(even_number) = even_stream.next().await {
-//! 		println!("Even {}",even_number);
-//! 	}
-//! });
 //!
-//! while let Some(odd_number) = odd_stream.next().await {
-//! 	println!("Odd {}",odd_number);
-//! }
+//!     tokio::spawn(async move {
+//!     	assert_eq!(vec![0,2,4], even_stream.collect::<Vec<_>>().await);
+//!     });
+//!
+//!     assert_eq!(vec![1,3,5], odd_stream.collect::<Vec<_>>().await);
+//! })
 //! ```
 //!
 //!A more advanced usage uses `split_by_map` which allows for extracting values
@@ -29,39 +29,36 @@
 //!
 //!```rust
 //! use split_stream_by::{Either,SplitStreamByExt};
+//! use futures::StreamExt;
 //!
-//! struct Request {
-//! 	//...
-//! }
+//! #[derive(Debug, PartialEq)]
+//! struct Request;
 //!
-//! struct Response {
-//! 	//...
-//! }
+//! #[derive(Debug, PartialEq)]
+//! struct Response;
 //!
 //! enum Message {
 //! 	Request(Request),
 //! 	Response(Response)
 //! }
 //!
-//! let incoming_stream = futures::stream::iter([
-//! 	Message::Request(Request {}),
-//! 	Message::Response(Response {}),
-//! 	Message::Response(Response {}),
-//! ]);
-//! let (mut request_stream, mut response_stream) = incoming_stream.split_by_map(|item| match item {
-//! 	Message::Request(req) => Either::Left(req),
-//! 	Message::Response(res) => Either::Right(res),
-//! });
+//! tokio::runtime::Runtime::new().unwrap().block_on(async {
+//!     let incoming_stream = futures::stream::iter([
+//!     	Message::Request(Request),
+//!     	Message::Response(Response),
+//!     	Message::Response(Response),
+//!     ]);
+//!     let (mut request_stream, mut response_stream) = incoming_stream.split_by_map(|item| match item {
+//!     	Message::Request(req) => Either::Left(req),
+//!     	Message::Response(res) => Either::Right(res),
+//!     });
 //!
-//! tokio::spawn(async move {
-//! 	while let Some(request) = request_stream.next().await {
-//! 		// ...
-//! 	}
-//! });
+//!     tokio::spawn(async move {
+//!     	assert_eq!(vec![Request], request_stream.collect::<Vec<_>>().await);
+//!     });
 //!
-//! while let Some(response) = response_stream.next().await {
-//! 	// ...
-//! }
+//!     assert_eq!(vec![Response,Response], response_stream.collect::<Vec<_>>().await);
+//! })
 //! ```
 mod ring_buf;
 mod split_by;
