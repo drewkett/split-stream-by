@@ -48,13 +48,14 @@
 //!     	Message::Response(res) => Either::Right(res),
 //!     });
 //!
-//!     tokio::spawn(async move {
-//!     	assert_eq!(vec![Request], request_stream.collect::<Vec<_>>().await);
-//!     });
-//!
-//!     assert_eq!(vec![Response,Response], response_stream.collect::<Vec<_>>().await);
+//!     let requests_fut = tokio::spawn(request_stream.collect::<Vec<_>>());
+//!     let responses_fut = tokio::spawn(response_stream.collect::<Vec<_>>());
+//!     let (requests,responses) = tokio::join!(requests_fut,responses_fut);
+//!    	assert_eq!(vec![Request], requests.unwrap());
+//!     assert_eq!(vec![Response,Response], responses.unwrap());
 //! })
 //! ```
+//!
 mod ring_buf;
 mod split_by;
 mod split_by_buffered;

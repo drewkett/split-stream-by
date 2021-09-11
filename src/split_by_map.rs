@@ -73,7 +73,14 @@ where
                     }
                 }
             }
-            Poll::Ready(None) => Poll::Ready(None),
+            Poll::Ready(None) => {
+                // If the underlying stream is finished, the `right` stream also must be finished, so
+                // wake it in case nothing else polls it
+                if let Some(waker) = this.waker_right {
+                    waker.wake_by_ref();
+                }
+                Poll::Ready(None)
+            }
             Poll::Pending => Poll::Pending,
         }
     }
@@ -114,7 +121,14 @@ where
                     Either::Right(right_item) => Poll::Ready(Some(right_item)),
                 }
             }
-            Poll::Ready(None) => Poll::Ready(None),
+            Poll::Ready(None) => {
+                // If the underlying stream is finished, the `left` stream also must be finished, so
+                // wake it in case nothing else polls it
+                if let Some(waker) = this.waker_left {
+                    waker.wake_by_ref();
+                }
+                Poll::Ready(None)
+            }
             Poll::Pending => Poll::Pending,
         }
     }
