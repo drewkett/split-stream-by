@@ -80,7 +80,7 @@ use futures::Stream;
 
 /// This is the extension crate would provides the functionality for splitting a
 /// stream
-pub trait SplitStreamByExt: Stream {
+pub trait SplitStreamByExt<P>: Stream {
     /// This takes ownership of a stream and returns two streams based on a
     /// predicate. When the predicate returns `true`, the item will appear in
     /// the first of the pair of streams returned. Items that return false will
@@ -92,7 +92,7 @@ pub trait SplitStreamByExt: Stream {
     /// let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
     /// let (even_stream, odd_stream) = incoming_stream.split_by(|&n| n % 2 == 0);
     /// ```
-    fn split_by<P>(
+    fn split_by(
         self,
         predicate: P,
     ) -> (
@@ -138,7 +138,7 @@ pub trait SplitStreamByExt: Stream {
     /// });
     /// ```
 
-    fn split_by_map<L, R, P>(
+    fn split_by_map<L, R>(
         self,
         predicate: P,
     ) -> (
@@ -166,9 +166,9 @@ pub trait SplitStreamByExt: Stream {
     /// use split_stream_by::SplitStreamByExt;
     ///
     /// let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
-    /// let (even_stream, odd_stream) = incoming_stream.split_by_buffered::<_,3>(|&n| n % 2 == 0);
+    /// let (even_stream, odd_stream) = incoming_stream.split_by_buffered::<3>(|&n| n % 2 == 0);
     /// ```
-    fn split_by_buffered<P, const N: usize>(
+    fn split_by_buffered<const N: usize>(
         self,
         predicate: P,
     ) -> (
@@ -209,13 +209,13 @@ pub trait SplitStreamByExt: Stream {
     /// 	Message::Response(Response {}),
     /// 	Message::Response(Response {}),
     /// ]);
-    /// let (mut request_stream, mut response_stream) = incoming_stream.split_by_map_buffered::<_,_,_,3>(|item| match item {
+    /// let (mut request_stream, mut response_stream) = incoming_stream.split_by_map_buffered::<_,_,3>(|item| match item {
     /// 	Message::Request(req) => Either::Left(req),
     /// 	Message::Response(res) => Either::Right(res),
     /// });
     /// ```
 
-    fn split_by_map_buffered<L, R, P, const N: usize>(
+    fn split_by_map_buffered<L, R, const N: usize>(
         self,
         predicate: P,
     ) -> (
@@ -233,4 +233,4 @@ pub trait SplitStreamByExt: Stream {
     }
 }
 
-impl<T> SplitStreamByExt for T where T: Stream + ?Sized {}
+impl<T, P> SplitStreamByExt<P> for T where T: Stream + ?Sized {}

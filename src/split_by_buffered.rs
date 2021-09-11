@@ -179,20 +179,3 @@ where
         response
     }
 }
-
-fn split_by_buffered<I, S, P, const N: usize>(
-    stream: S,
-    predicate: P,
-) -> (
-    TrueSplitByBuffered<I, S, P, N>,
-    FalseSplitByBuffered<I, S, P, N>,
-)
-where
-    S: Stream<Item = I> + Sized,
-    P: Fn(&I) -> bool,
-{
-    let stream = SplitByBuffered::new(stream, predicate);
-    let true_stream = TrueSplitByBuffered::new(stream.clone());
-    let false_stream = FalseSplitByBuffered::new(stream);
-    (true_stream, false_stream)
-}
