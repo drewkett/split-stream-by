@@ -43,3 +43,10 @@ impl<T, const N: usize> RingBuf<T, N> {
         }
     }
 }
+
+impl<T, const N: usize> Drop for RingBuf<T, N> {
+    fn drop(&mut self) {
+        // pop_front reads values from MaybeUninit which will then run its drop code
+        while let Some(_) = self.pop_front() {}
+    }
+}
