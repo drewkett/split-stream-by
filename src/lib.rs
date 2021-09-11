@@ -19,8 +19,8 @@
 //! })
 //! ```
 //!
-//! The following is how to use the version that can buffer more than one value. In
-//! this case
+//! The following is how to use the version that can buffer more than one value.
+//! In this case
 //!```rust
 //! use futures::StreamExt;
 //! use split_stream_by::SplitStreamByExt;
@@ -75,7 +75,6 @@
 //!     assert_eq!(vec![Response,Response], responses.unwrap());
 //! })
 //! ```
-//!
 mod ring_buf;
 mod split_by;
 mod split_by_buffered;

@@ -71,8 +71,8 @@ where
                 }
             }
             Poll::Ready(None) => {
-                // If the underlying stream is finished, the `false` stream also must be finished, so
-                // wake it in case nothing else polls it
+                // If the underlying stream is finished, the `false` stream also must be
+                // finished, so wake it in case nothing else polls it
                 if let Some(waker) = this.waker_false {
                     waker.wake_by_ref();
                 }
@@ -118,8 +118,8 @@ where
                 }
             }
             Poll::Ready(None) => {
-                // If the underlying stream is finished, the `true` stream also must be finished, so
-                // wake it in case nothing else polls it
+                // If the underlying stream is finished, the `true` stream also must be
+                // finished, so wake it in case nothing else polls it
                 if let Some(waker) = this.waker_true {
                     waker.wake_by_ref();
                 }
