@@ -30,8 +30,8 @@ where
 {
     pub(crate) fn new(stream: S, predicate: P) -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Self {
-            buf_right: unsafe { MaybeUninit::uninit().assume_init() },
-            buf_left: unsafe { MaybeUninit::uninit().assume_init() },
+            buf_right: RingBuf::new(),
+            buf_left: RingBuf::new(),
             waker_right: None,
             waker_left: None,
             stream,
