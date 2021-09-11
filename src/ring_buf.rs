@@ -11,6 +11,9 @@ impl<T, const N: usize> RingBuf<T, N> {
         Self {
             head: 0,
             tail: 0,
+            // From rust docs,  The `assume_init` is
+            // safe because the type we are claiming to have initialized here is a
+            // bunch of `MaybeUninit`s, which do not require initialization.
             data: unsafe { MaybeUninit::uninit().assume_init() },
         }
     }
@@ -25,7 +28,10 @@ impl<T, const N: usize> RingBuf<T, N> {
 
     pub(crate) fn push_back(&mut self, item: T) -> Option<T> {
         if self.remaining() > 0 {
-            unsafe { self.data[self.tail].as_mut_ptr().write(item) };
+            let ptr = self.data[self.tail].as_mut_ptr();
+            // This is safe because there is space available so self.data[self.tail] points
+            // to is ununsed
+            unsafe { ptr.write(item) };
             self.tail = (self.tail + 1) % N;
             None
         } else {
@@ -35,7 +41,10 @@ impl<T, const N: usize> RingBuf<T, N> {
 
     pub(crate) fn pop_front(&mut self) -> Option<T> {
         if self.len() > 0 {
-            let item = unsafe { self.data[self.head].as_mut_ptr().read() };
+            let ptr = self.data[self.head].as_mut_ptr();
+            // This is safe because there are items in the buffer so self.data[self.head]
+            // points to a value
+            let item = unsafe { ptr.read() };
             self.head = (self.head + 1) % N;
             Some(item)
         } else {
