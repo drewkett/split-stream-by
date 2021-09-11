@@ -19,6 +19,26 @@
 //! })
 //! ```
 //!
+//! The following is how to use the version that can buffer more than one value. In
+//! this case
+//!```rust
+//! use futures::StreamExt;
+//! use split_stream_by::SplitStreamByExt;
+//!
+//! tokio::runtime::Runtime::new().unwrap().block_on(async {
+//!     const BUFSIZE: usize = 10;
+//!     let incoming_stream = futures::stream::iter([0,1,2,3,4,5]);
+//!     let (mut even_stream, mut odd_stream) = incoming_stream.split_by_buffered::<BUFSIZE>(|&n| n % 2 == 0);
+//!
+//!
+//!     tokio::spawn(async move {
+//!     	assert_eq!(vec![0,2,4], even_stream.collect::<Vec<_>>().await);
+//!     });
+//!
+//!     assert_eq!(vec![1,3,5], odd_stream.collect::<Vec<_>>().await);
+//! })
+//! ```
+//!
 //!A more advanced usage uses `split_by_map` which allows for extracting values
 //! while splitting
 //!

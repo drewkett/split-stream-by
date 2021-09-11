@@ -1,6 +1,5 @@
 use std::{
     marker::PhantomData,
-    mem::MaybeUninit,
     pin::Pin,
     sync::{Arc, Mutex},
     task::{Poll, Waker},
