@@ -58,8 +58,4 @@ while let Some(response) = response_stream.next().await {
 	// ...
 }
 ```
-
-In its current implementation, it only buffers up to one element in the
-scenario where the stream that requests the next item is not the one
-that matches the predicate. In the future, this might be changed to be
-configurable using a const generic parameter
+`split_by` and `split_by_map` only buffer up to 1 element. Use `split_by_buffered` or `split_by_map_buffered` to customize the number of buffered elements.
